@@ -1,0 +1,13 @@
+{
+    "debug": true,
+    "http": {
+        "listen": "0.0.0.0:4000",
+        "allow":["*"],
+        "deny":[]
+    },
+    "smtp": {
+        "address": "smtp.exmail.qq.com:25",
+        "username": "example@example.com",
+        "password": "example"
+    }
+}

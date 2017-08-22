@@ -6,8 +6,9 @@
         "deny":[]
     },
     "smtp": {
-        "address": "smtp.exmail.qq.com:25",
-        "username": "example@example.com",
-        "password": "example"
+        "address": "smtp.vip.qkagame.com:25",
+        "username": "ywmail@vip.qkagame.com",
+        "password": "*****",
+        "authtype":"Login"
     }
 }

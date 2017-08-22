@@ -11,15 +11,18 @@ type SMTP struct {
 	address  string
 	username string
 	password string
+    authtype string
 }
 
-func New(address,username,password string) *SMTP {
+func New(address,username,password ,authtype string) *SMTP {
 	return &SMTP{
 		address:  address,
 		username: username,
 		password: password,
+        authtype: authtype,
 	}
 }
+
 
 func (self *SMTP) SendMail(to []string, subject, body string, contentType ...string) error {
 
@@ -51,6 +54,13 @@ func (self *SMTP) SendMail(to []string, subject, body string, contentType ...str
 	message += "\r\n" + b64.EncodeToString([]byte(body))
 
 	auth := smtp.PlainAuth("", self.username, self.password, addrArr[0])
+    
+    if self.authtype == "Login" {
+        auth = LoginAuth(self.username, self.password)
+    }
+   
+   
+    fmt.Println(auth)
  
 	return smtp.SendMail(self.address, auth, self.username, to, []byte(message))
 }

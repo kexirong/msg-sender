@@ -11,7 +11,6 @@ import (
 
 
 func SrvStart( cfg *simplejson.Json) {
-
     //fmt.Println(cfg)
     
     httpAddr:=cfg.Get("http").Get("listen").MustString("")
@@ -19,23 +18,23 @@ func SrvStart( cfg *simplejson.Json) {
     smtpAddr:=smtpCfg.Get("address").MustString("")
     smtpUser:=smtpCfg.Get("username").MustString("")
     smtpPass:=smtpCfg.Get("password").MustString("")
+    smtpAuthtype:=smtpCfg.Get("authtype").MustString("")
     
     fmt.Println(fmt.Sprintf("httpAddr:%s,smtpAddr:%s,smtpUser:%s,smtpPass:%s" ,httpAddr,smtpAddr,smtpUser,smtpPass))
     
     
-    s := email.New(smtpAddr,smtpUser,smtpPass)
+    s := email.New(smtpAddr,smtpUser,smtpPass,smtpAuthtype)
     fmt.Println(s)
     
     http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println(r.URL.Query())
+       /* fmt.Println(r.URL.Query())
         fmt.Println(r.Method)
         err := r.ParseForm()
 		if err != nil {
 			panic(err)
 		}
-        
         fmt.Println(r.Form.Get("name"))
-        fmt.Println(r.Form["name"])
+        fmt.Println(r.Form["name"])*/
 		w.Write([]byte("ok"))
 	})
     
@@ -46,12 +45,8 @@ func SrvStart( cfg *simplejson.Json) {
     
     
     http.HandleFunc("/sender/mail", func(w http.ResponseWriter, r *http.Request) {
-      //  token := param.String(r, "token", "")
-       /* if cfg.Http.Token != token {
-            http.Error(w, "no privilege", http.StatusForbidden)
-            return
-        }
-
+    
+       /*
         err := r.ParseForm()
 		if err != nil {
 			panic(err)

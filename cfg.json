@@ -8,7 +8,7 @@
     "smtp": {
         "address": "smtp.vip.qkagame.com:25",
         "username": "ywmail@vip.qkagame.com",
-        "password": "*****",
+        "password": "qkagame123",
         "authtype":"Login"
     }
 }

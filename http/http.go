@@ -46,18 +46,18 @@ func SrvStart( cfg *simplejson.Json) {
     
     http.HandleFunc("/sender/mail", func(w http.ResponseWriter, r *http.Request) {
     
-       /*
+       
         err := r.ParseForm()
 		if err != nil {
 			panic(err)
-		}*/
-       //  fmt.Println(r.PostForm)
+		}
+         fmt.Println(r.PostForm)
         tos:=r.PostFormValue("to")
-        to := strings.Split(tos,";")
+        to := strings.Split(tos,",")
         subject := r.PostFormValue("subject")
         content := r.PostFormValue("content")
         fmt.Println("tos:",tos, "subject:",subject, "content:",content)
-        err := s.SendMail( to, subject, content)
+        err = s.SendMail( to, subject, content)
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
         } else {

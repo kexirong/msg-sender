@@ -1,5 +1,5 @@
 package email
-
+//github.com/go-gomail/gomail/blob/master/auth.go
 import (
     "strings"
     "fmt"

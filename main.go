@@ -7,9 +7,10 @@ import (
  )
     
 
-const cfgFileName="cfg.json"
+const cfgFileName="cfgtest.json"
 
 func main() {
+    fmt.Println("this a  msg-sender.")
     Jcfg,err:=getConfig(cfgFileName)
     if err !=nil {
         panic(err)
@@ -19,5 +20,5 @@ func main() {
     http.SrvStart(Jcfg)
 
     
-    fmt.Println("this a test,msg-sender.")
+    fmt.Println("runing... ")
 }

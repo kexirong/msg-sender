@@ -1,9 +1,9 @@
 package email
 //github.com/go-gomail/gomail/blob/master/auth.go
 import (
-    "strings"
     "fmt"
     "net/smtp"
+    "bytes"
 )
 
 type loginAuth struct {
@@ -16,20 +16,19 @@ func LoginAuth(username, password string) smtp.Auth {
 func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {    
     return "LOGIN", nil, nil
 }
+
+
 func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-    command := string(fromServer)
-    command = strings.TrimSpace(command)
-    command = strings.TrimSuffix(command, ":")
-    command = strings.ToLower(command)
-    if more {
-        if (command == "username") {
-            return []byte(fmt.Sprintf("%s", a.username)), nil
-        } else if (command == "password") {
-            return []byte(fmt.Sprintf("%s", a.password)), nil
-        } else {
-            // We've already sent everything.
-            return nil, fmt.Errorf("unexpected server challenge: %s", command)
+	if more {
+        switch {
+        case bytes.Equal(fromServer, []byte("Username:")):
+            return []byte(a.username), nil
+        case bytes.Equal(fromServer, []byte("Password:")):
+            return []byte(a.password), nil
+        default:
+            return nil, fmt.Errorf(" unexpected server challenge: %s", fromServer)
         }
     }
+    
     return nil, nil
-}
+}    

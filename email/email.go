@@ -8,9 +8,9 @@ import (
 )
 
 type SMTP struct {
-	address  string
-	username string
-	password string
+	address  , 
+	username ,
+	password ,
     authtype string
 }
 
@@ -32,7 +32,7 @@ func (self *SMTP) SendMail(to []string, subject, body string, contentType ...str
 		return fmt.Errorf("address format error")
 	}
 
-	b64 := base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+	b64 := base64.StdEncoding// base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
 	header := make(map[string]string)
 	header["From"] = self.username

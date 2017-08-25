@@ -1,10 +1,10 @@
 package wechat
 
 import (
-	"fmt"
-	"net/http"
-	"crypto/tls"
-	"crypto/x509"
+    "fmt"
+    "net/http"
+    "crypto/tls"
+    "crypto/x509"
     "io/ioutil"
     "github.com/bitly/go-simplejson"
     "log"
@@ -28,7 +28,7 @@ type extend struct {
 }
 
 type WeChat struct {
-	CorpID string
+    CorpID string
     AgentId int
     Secret string
     *extend
@@ -51,12 +51,12 @@ func init() {
     } */
     pool := x509.NewCertPool()
     pool.AppendCertsFromPEM([]byte(wxRootPEM))
-	tr := &http.Transport{
-		TLSClientConfig:    &tls.Config{RootCAs: pool},
-		DisableCompression: true,
-	}
+    tr := &http.Transport{
+        TLSClientConfig:    &tls.Config{RootCAs: pool},
+        DisableCompression: true,
+    }
     
-	TLSClient = &http.Client{Transport: tr}
+    TLSClient = &http.Client{Transport: tr}
     Info = log.New( os.Stdout , "INFO: " , log.Ldate|log.Ltime|log.Lshortfile )
     
     Warning = log.New(os.Stdout,"WARNING: ",log.Ldate|log.Ltime|log.Lshortfile)
@@ -68,27 +68,27 @@ func init() {
 
 
 func New(CorpID string, AgentId int,Secret string) *WeChat {
-	return &WeChat{
-		CorpID:  CorpID,
-		AgentId: AgentId,
-		Secret: Secret,
+    return &WeChat{
+        CorpID:  CorpID,
+        AgentId: AgentId,
+        Secret: Secret,
         extend:&extend{},
-	}
+    }
 }
 
 
 
 
 type Content struct {
-	Content string `json:"content"`
+    Content string `json:"content"`
 }
 
 type JsonMsg struct {
-	ToUser  string  `json:"touser,omitempty"`
+    ToUser  string  `json:"touser,omitempty"`
     ToParty string  `json:"toparty,omitempty"`
-	MsgType string  `json:"msgtype"`
-	AgentID int     `json:"agentid"`
-	Text    Content `json:"text"`
+    MsgType string  `json:"msgtype"`
+    AgentID int     `json:"agentid"`
+    Text    Content `json:"text"`
 }
 
 /*func checkErr(err error){
@@ -97,12 +97,12 @@ type JsonMsg struct {
 
 
 func (wx *WeChat )GetAccToken() {
-	getAccTokenUrl := fmt.Sprintf(AccTokenUrl,wx.CorpID,wx.Secret ) //"wwbdcce0a8ec81751a","N7qVYuTDga8YxMnC6XahFJylPKnUx6egftuvksMIAoc"
-	
-	rsp, err := TLSClient.Get(getAccTokenUrl)
-	if err != nil {
-		Error.Println(err)
-	} 
+    getAccTokenUrl := fmt.Sprintf(AccTokenUrl,wx.CorpID,wx.Secret )
+    
+    rsp, err := TLSClient.Get(getAccTokenUrl)
+    if err != nil {
+        Error.Println(err)
+    } 
     json,err :=simplejson.NewFromReader(rsp.Body)
     if err != nil {
         Error.Println(err)

@@ -18,7 +18,7 @@ func isExist(path string) bool {   //copy from  phpgo's csdnBlog
 
 func getConfig(fn string) (*simplejson.Json,error) {
     var fp string
-	wd, err := os.Getwd()
+    wd, err := os.Getwd()
     if err==nil {
         fp = path.Join(wd, fn)
     }else {

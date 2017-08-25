@@ -19,7 +19,7 @@ func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
 
 
 func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
+    if more {
         switch {
         case bytes.Equal(fromServer, []byte("Username:")):
             return []byte(a.username), nil

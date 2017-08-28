@@ -10,7 +10,7 @@ import (
 
 
 
-func isExist(path string) bool {   //copy from  phpgo's csdnBlog
+func isExist(path string) bool {//copy from  phpgo's csdnBlog
     _, err := os.Stat(path)
     return err == nil || os.IsExist(err) 
 }

@@ -33,6 +33,26 @@ const testStr = `
 
 <div>
 
+<div>
+
+
+<form action="/sender/wechat" method="post">
+接受者:
+<input type="text" name="to" value="kexirong@outlook.com">
+<br>
+
+消息:
+<br>
+  <textarea name="content" cols="30" rows="4"> 
+        
+  </textarea>  
+
+<br><br>
+<input type="submit" value="提交">
+</form> 
+
+<div>
+
 
 </body>
 </html>

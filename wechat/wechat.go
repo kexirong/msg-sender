@@ -6,12 +6,11 @@ import (
     "crypto/tls"
     "crypto/x509"
     "io/ioutil"
-    "github.com/bitly/go-simplejson"
-    "log"
-    "os"
     "time"
     "encoding/json"
     "bytes"
+    
+    "github.com/bitly/go-simplejson"
 )
 
 const (
@@ -34,13 +33,8 @@ type WeChat struct {
     *extend
 }
 
+var  TLSClient *http.Client
 
-var ( 
-    Info *log.Logger 
-    Warning *log.Logger 
-    Error *log.Logger 
-    TLSClient *http.Client
-) 
 
 
 func init() { 
@@ -57,11 +51,7 @@ func init() {
     }
     
     TLSClient = &http.Client{Transport: tr}
-    Info = log.New( os.Stdout , "INFO: " , log.Ldate|log.Ltime|log.Lshortfile )
     
-    Warning = log.New(os.Stdout,"WARNING: ",log.Ldate|log.Ltime|log.Lshortfile)
-    
-    Error = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 } 
 
 
@@ -96,28 +86,25 @@ type JsonMsg struct {
 }*/
 
 
-func (wx *WeChat )GetAccToken() {
+func (wx *WeChat )GetAccToken() error {
     getAccTokenUrl := fmt.Sprintf(AccTokenUrl,wx.CorpID,wx.Secret )
     
     rsp, err := TLSClient.Get(getAccTokenUrl)
     if err != nil {
-        Error.Println(err)
+        return err
     } 
     json,err :=simplejson.NewFromReader(rsp.Body)
-    if err != nil {
-        Error.Println(err)
-        return
+    if err != nil {   
+        return err
     }
     errcode:=json.Get("errcode").MustInt(1)
     if errcode != 0{
-        Error.Println(json.Get("errmsg").MustString(""))
-        Error.Println(err)
-        return
+        return fmt.Errorf("get WeChat Access Token error:",json.Get("errmsg").MustString(""))
+        
     }
     wx.AccToken=json.Get("access_token").MustString("")
     wx.TokenTS=time.Now().Unix()
-    Info.Println("getAccToken done: ",wx.AccToken)
-           
+    return fmt.Errorf("getAccToken done: ",wx.AccToken)   
 
 }
 
@@ -139,7 +126,7 @@ func (wx WeChat) SendMsg(touser, toparty, content string) (string,error) {
             wx.GetAccToken()
         }else{
             jmsg,err:= json.Marshal(msg)
-            Info.Println(string(jmsg[:]))
+            
             if err !=nil {
                 return "",err
             }

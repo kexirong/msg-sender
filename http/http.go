@@ -1,13 +1,29 @@
 package http
 import (
 	"fmt"
-    "github.com/kexirong/msg-sender/email"
 	"net/http"
-    "github.com/bitly/go-simplejson"
 	_ "net/http/pprof"
     "log"
-   "strings"
+    "os"
+    "strings"
+    "github.com/kexirong/msg-sender/email"
+    "github.com/kexirong/msg-sender/wechat"
+    
+    
+    "github.com/bitly/go-simplejson"
 )
+var ( 
+    Info *log.Logger 
+    Warning *log.Logger 
+    Error *log.Logger 
+   
+    ) 
+
+func init(){
+    Info = log.New( os.Stdout , "INFO: " , log.Ldate|log.Ltime|log.Lshortfile )
+    Warning = log.New(os.Stdout,"WARNING: ",log.Ldate|log.Ltime|log.Lshortfile)
+    Error = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
 
 
 func SrvStart( cfg *simplejson.Json) {
@@ -19,12 +35,20 @@ func SrvStart( cfg *simplejson.Json) {
     smtpUser:=smtpCfg.Get("username").MustString("")
     smtpPass:=smtpCfg.Get("password").MustString("")
     smtpAuthtype:=smtpCfg.Get("authtype").MustString("")
+    wxCfg:=cfg.Get("wechat")
+    wxCorpID:=wxCfg.Get("CorpID").MustString("")
+    wxAgentId:=wxCfg.Get("AgentId").MustInt(0) 
+    wxSecret:=wxCfg.Get("Secret").MustString("") 
     
-    fmt.Println(fmt.Sprintf("httpAddr:%s,smtpAddr:%s,smtpUser:%s,smtpPass:%s" ,httpAddr,smtpAddr,smtpUser,smtpPass))
+    Info.Println(fmt.Sprintf("httpAddr:%s",httpAddr))
+    Info.Println(fmt.Sprintf("smtpAddr:%s,smtpUser:%s,smtpPass:%s" ,smtpAddr, smtpUser, smtpPass))
     
     
     s := email.New(smtpAddr,smtpUser,smtpPass,smtpAuthtype)
-    fmt.Println(s)
+    wx:=wechat.New(wxCorpID, wxAgentId, wxSecret)
+    Info.Println(wx.GetAccToken())
+    
+    
     
     http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
        /* fmt.Println(r.URL.Query())
@@ -45,25 +69,45 @@ func SrvStart( cfg *simplejson.Json) {
     
     
     http.HandleFunc("/sender/mail", func(w http.ResponseWriter, r *http.Request) {
-    
-       
         err := r.ParseForm()
 		if err != nil {
 			panic(err)
 		}
-         fmt.Println(r.PostForm)
+        //fmt.Println(r.PostForm)
         tos:=r.PostFormValue("to")
         to := strings.Split(tos,",")
         subject := r.PostFormValue("subject")
         content := r.PostFormValue("content")
-        fmt.Println("tos:",tos, "subject:",subject, "content:",content)
+        Info.Println("tos:",tos, "subject:",subject, "content:",content)
         err = s.SendMail( to, subject, content)
         if err != nil {
+            Error.Println(err)
             http.Error(w, err.Error(), http.StatusInternalServerError)
         } else {
             http.Error(w, "success", http.StatusOK)
         }
     })
+    
+    http.HandleFunc("/sender/wechat", func(w http.ResponseWriter, r *http.Request) {
+        err := r.ParseForm()
+		if err != nil {
+			panic(err)
+		}
+        //fmt.Println(r.PostForm)
+        tos:=r.PostFormValue("to")
+        content := r.PostFormValue("content")
+        Info.Println("tos:",tos, "content:",content)
+        
+        resp,err := wx.SendMsg(tos, "", content)
+        if err != nil {
+            Error.Println(err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        } else {
+            Info.Println(resp)
+            http.Error(w, resp , http.StatusOK)
+        }
+    })
+    
     
     log.Fatal(http.ListenAndServe(httpAddr, nil))
     

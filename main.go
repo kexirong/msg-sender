@@ -1,10 +1,15 @@
 package main
 
+
+
 import (
     "fmt"
  //   "reflect"
     "github.com/kexirong/msg-sender/http"
- )
+    )
+ 
+ 
+
     
 
 const cfgFileName="cfgtest.json"
@@ -15,7 +20,6 @@ func main() {
     if err !=nil {
         panic(err)
     }
-
     //fmt.Println(Jcfg)
     http.SrvStart(Jcfg)
 

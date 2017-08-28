@@ -59,8 +59,7 @@ func (self *SMTP) SendMail(to []string, subject, body string, contentType ...str
         auth = LoginAuth(self.username, self.password)
     }
    
-   
-    fmt.Println(auth)
+
  
     return smtp.SendMail(self.address, auth, self.username, to, []byte(message))
 }

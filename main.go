@@ -12,7 +12,7 @@ import (
 
     
 
-const cfgFileName="cfgtest.json"
+const cfgFileName="cfg.json"
 
 func main() {
     fmt.Println("this a  msg-sender.")

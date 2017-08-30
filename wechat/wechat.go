@@ -139,7 +139,7 @@ func (wx WeChat) SendMsg(touser, toparty, content string) (string,error) {
         }
     }
     
-    return "",fmt.Errorf("getAccToken failed",wx.GetAccToken().Error())
+    return "",fmt.Errorf("getAccToken failed: %s",wx.GetAccToken().Error())
 }
 
 

@@ -10,5 +10,10 @@
         "username": "****@vip.com",
         "password": "*****",
         "authtype":"Login"
+    },
+    "wechat":{
+        "CorpID":"ww2085adb",
+        "AgentId":1000002,
+        "Secret":"5WsjwD2DqyR4PMTWnJJp_AZsaKc"
     }
 }

@@ -54,13 +54,13 @@ const testStr = `
        
         <div class="content">
             <form action="/sender/mail" method="post">
-                收件人:
+                <label>收件人:</label>
                 <input type="text" name="to" value=""><span>*多个用","分隔</span>
                 <br>
-                标题:
+                <label>标题:</label>
                 <input type="text" name="subject" value="">
                 <br>
-                内容:<br>
+                <label>内容:</label>
                 <textarea name="content" cols="30" rows="4"></textarea>  
                 <br><br>
                 <input type="submit" value="提交">
@@ -73,10 +73,10 @@ const testStr = `
        
         <div class="content">
             <form action="/sender/wechat" method="post">
-                接受者:
+                <label>接受者:</label>
                 <input type="text" name="to" value=""><span>*多个用"|"分隔</span>
                 <br>
-                消息:<br>
+                <label>消息:</label>
                 <textarea name="content" cols="30" rows="4"></textarea>  
                 <br><br>
                 <input type="submit" value="提交">

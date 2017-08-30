@@ -104,14 +104,13 @@ func (wx *WeChat )GetAccToken() error {
     }
     wx.AccToken=json.Get("access_token").MustString("")
     wx.TokenTS=time.Now().Unix()
-    return fmt.Errorf("getAccToken done: ",wx.AccToken)   
+    return fmt.Errorf("getAccToken done: %s",wx.AccToken)   
 
 }
 
 
 func (wx WeChat) SendMsg(touser, toparty, content string) (string,error) {
     
-      
     msg:=JsonMsg{
         ToUser:touser,
         ToParty:toparty,
@@ -126,10 +125,10 @@ func (wx WeChat) SendMsg(touser, toparty, content string) (string,error) {
             wx.GetAccToken()
         }else{
             jmsg,err:= json.Marshal(msg)
-            
             if err !=nil {
                 return "",err
             }
+            
             postSendmsgUrl:=fmt.Sprintf(SendmsgUrl,wx.AccToken )
             rsp, err := TLSClient.Post(postSendmsgUrl, "application/json;charset=utf-8", bytes.NewReader(jmsg))
             if err!=nil{
@@ -137,11 +136,10 @@ func (wx WeChat) SendMsg(touser, toparty, content string) (string,error) {
             }    
             byteData, err := ioutil.ReadAll(rsp.Body)
             return string(byteData[:]),err
-
         }
     }
     
-    return "",fmt.Errorf("getAccToken failed")
+    return "",fmt.Errorf("getAccToken failed",wx.GetAccToken().Error())
 }
 
 

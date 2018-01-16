@@ -1,17 +1,21 @@
 package http
 
 import (
+	"errors"
+	"strconv"
+
 	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"path"
 	"strings"
-
-	"github.com/kexirong/msg-sender/email"
-	"github.com/kexirong/msg-sender/wechat"
+	"time"
 
 	"github.com/bitly/go-simplejson"
+	"github.com/kexirong/msg-sender/email"
+	"github.com/kexirong/msg-sender/wechat"
 )
 
 var (
@@ -20,10 +24,87 @@ var (
 	Error   *log.Logger
 )
 
+type logfile struct {
+	file        *os.File
+	isOpen      bool
+	rolte       <-chan time.Time
+	preFileName string
+}
+
+func (lf *logfile) Write(b []byte) (int, error) {
+	select {
+	case <-lf.rolte:
+		if lf.isOpen {
+			lf.Close()
+		}
+		err := lf.SetFile(lf.preFileName + time.Now().Format("2006-01-02") + ".log")
+		if err != nil {
+			return 0, err
+		}
+
+	default:
+		if !lf.isOpen {
+			return 0, errors.New("logfile is not config")
+		}
+	}
+
+	return lf.file.Write(b)
+}
+
+func NewLogFile(preFileName string) *logfile {
+	var lf logfile
+	lf.preFileName = preFileName
+	err := lf.SetFile(lf.preFileName + time.Now().Format("2006-01-02") + ".log")
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		t := time.Now()
+		nx := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()).AddDate(0, 0, 1)
+		<-time.After(nx.Sub(t))
+		lf.rolte = time.Tick(time.Hour * 24)
+	}()
+
+	return &lf
+}
+
+func (lf *logfile) SetFile(filename string) error {
+	var filepath string
+	wd, err := os.Getwd()
+	if err == nil {
+		filepath = path.Join(wd, filename)
+	} else {
+		panic(err)
+	}
+
+	_, err = os.Stat(filepath)
+
+	if err == nil || os.IsExist(err) {
+		err := os.Rename(filepath, filepath+strconv.FormatInt(time.Now().Unix(), 10))
+		if err != nil {
+			return err
+		}
+	}
+
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0664)
+	if err != nil {
+		return err
+	}
+	lf.file = file
+	lf.isOpen = true
+	return nil
+}
+
+func (lf *logfile) Close() {
+	lf.file.Close()
+}
+
 func init() {
-	Info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	Warning = log.New(os.Stdout, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	fli := NewLogFile("msg-sender")
+	Info = log.New(fli, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Warning = log.New(fli, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Error = log.New(fli, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func SrvStart(cfg *simplejson.Json) {
@@ -37,14 +118,14 @@ func SrvStart(cfg *simplejson.Json) {
 	smtpAuthtype := smtpCfg.Get("authtype").MustString("")
 	wxCfg := cfg.Get("wechat")
 	wxCorpID := wxCfg.Get("CorpID").MustString("")
-	wxAgentId := wxCfg.Get("AgentId").MustInt(0)
+	wxAgentID := wxCfg.Get("AgentId").MustInt(0)
 	wxSecret := wxCfg.Get("Secret").MustString("")
 
 	Info.Println(fmt.Sprintf("httpAddr:%s", httpAddr))
 	Info.Println(fmt.Sprintf("smtpAddr:%s,smtpUser:%s,smtpPass:%s", smtpAddr, smtpUser, smtpPass))
 
 	s := email.New(smtpAddr, smtpUser, smtpPass, smtpAuthtype)
-	wx := wechat.New(wxCorpID, wxAgentId, wxSecret)
+	wx := wechat.New(wxCorpID, wxAgentID, wxSecret)
 	Info.Println(wx.GetAccToken())
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +155,7 @@ func SrvStart(cfg *simplejson.Json) {
 		to := strings.Split(tos, ",")
 		subject := r.PostFormValue("subject")
 		content := r.PostFormValue("content")
-		Info.Println("tos:", tos, "subject:", subject, "content:", content)
+		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "tos:", tos, "subject:", subject, "content:", content)
 		err = s.SendMail(to, subject, content)
 		if err != nil {
 			Error.Println(err)
@@ -92,7 +173,7 @@ func SrvStart(cfg *simplejson.Json) {
 		//fmt.Println(r.PostForm)
 		tos := r.PostFormValue("to")
 		content := r.PostFormValue("content")
-		Info.Println("tos:", tos, "content:", content)
+		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "tos:", tos, "content:", content)
 
 		resp, err := wx.SendMsg(tos, "", content)
 		if err != nil {

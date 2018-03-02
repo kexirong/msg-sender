@@ -34,9 +34,7 @@ type logfile struct {
 func (lf *logfile) Write(b []byte) (int, error) {
 	select {
 	case <-lf.rolte:
-		if lf.isOpen {
-			lf.Close()
-		}
+
 		err := lf.SetFile(lf.preFileName + time.Now().Format("2006-01-02") + ".log")
 		if err != nil {
 			return 0, err
@@ -63,6 +61,7 @@ func NewLogFile(preFileName string) *logfile {
 		t := time.Now()
 		nx := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()).AddDate(0, 0, 1)
 		<-time.After(nx.Sub(t))
+		lf.SetFile(lf.preFileName + time.Now().Format("2006-01-02") + ".log")
 		lf.rolte = time.Tick(time.Hour * 24)
 	}()
 
@@ -86,7 +85,9 @@ func (lf *logfile) SetFile(filename string) error {
 			return err
 		}
 	}
-
+	if lf.isOpen {
+		lf.Close()
+	}
 	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0664)
 	if err != nil {
 		return err

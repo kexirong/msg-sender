@@ -26,6 +26,9 @@
         "Secret":"5WsjwD2DqyR4PMTWnJJp_qvyOothRjDAZsaKc"//密串，企业微信应用中可以得到
     }
 }
+- curl -d "to=test@qq.com,test@sina.com&subject=test&content=test测试..." "http://10.1.1.202:4000/sender/mail"
+- curl -d "to=kexirong&content=test测试..." "http://10.1.1.202:4000/sender/wechat"
+
 ```
 
 - curl -d "to=test@qq.com,test@sina.com&subject=test&content=test测试..." "http://10.1.1.202:4000/sender/mail"

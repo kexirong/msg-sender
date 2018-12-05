@@ -15,7 +15,7 @@
 >        "deny":[]
 >    },
 >    "smtp": {//邮件配置
->        "address": "smtp.exmail.qq.com:25",//邮件发送>服务器地址
+>        "address": "smtp.exmail.qq.com:25",//邮件发送服务器地址
 >        "username": "kexirong@example.com",
 >        "password": "123456"
 >    },

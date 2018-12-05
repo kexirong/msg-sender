@@ -4,7 +4,7 @@
 
 - [企业微信API](https://github.com/kexirong/msg-sender/blob/master/wechat/README.md)
 
-## cfg.json 是纯json格式：
+## cfg.json 是纯json格式
 
 > ```json
 >{
@@ -16,7 +16,7 @@
 >    },
 >    "smtp": {//邮件配置
 >        "address": "smtp.exmail.qq.com:25",//邮件发送>服务器地址
->        "username": "kexirong@example.com",
+>        "username": "kexirong@example.com",
 >        "password": "123456"
 >    },
 >    "wechat":{//企业微信配置
@@ -24,14 +24,14 @@
 >        "AgentId":1000002,//应用id，通过新建企业微信应用>获取
 >        "Secret":"5WsjwD2DqyR4PMTWnJJp_qvyOothRjDAZs>aKc"//密串，企业微信应用中可以得到
 >    }
-> }
+>}
 >```
 
-### 测试方法：
+## 测试方法
 
 >```shell
->   curl -d "to=test@qq.com,test@sina.com&subject=test&content=测试报文体" "http://10.1.1.202:4000/sender/mail"
-> curl -d "to=kexirong&&content=测试报文体" "http://10.1.1.202:4000/sender/wechat"
+>curl -d "to=test@qq.com,test@sina.com&subject=test&content=测试报文体" "http://10.1.1.202:4000/sender/mail"
+>curl -d "to=kexirong&&content=测试报文体" "http://10.1.1.202:4000/sender/wechat"
 >```
 
 ```git

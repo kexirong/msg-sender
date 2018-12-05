@@ -1,25 +1,23 @@
 # wechat-sender
 
-#### 请求URL:
+## 请求URL
 
-- http://ip:port/sender/wechat
+>- `http://ip:port/sender/wechat`
 
-#### 请求方式：
+### 请求方式：
 
 - POST
 
 #### 请求头：
 
-|参数名|是否必须|类型|说明|
-|:----    |:---|:----- |-----   |
-|Content-Type |否  |string |请求类型： text/plain   |
+>|参数名|是否必须|类型|说明|
+>|:----|:---|:----- |:-----|
+>|Content-Type |是  |string |请求类型： >application/x-www-form-urlencoded \|\| >application/json  |
 
+### 请求参数
 
-
-#### 请求参数:
-
-|参数名|是否必须|类型|说明|
-|:----    |:---|:----- |:-----   |
-|to| 是  |string | 收件人地址，多个接收者用(&#124;)分隔 全体填@all|
-|content|是  |string | 消息内容|
-|contentType|否  |string |填 text|
+>|参数名|是否必须|类型|说明|
+>|:----    |:---|:----- |:-----   |
+>|to| 是  |string | 收件人地址，多个接收者用(&#124;)分隔 全体填@all|
+>|content|是  |string | 消息内容|
+>|contentType|否  |string |填 text(保留字段)|

@@ -2,7 +2,7 @@
 
 #### 请求URL:
 
-- http://ip:port/sender/mail
+- http://ip:port/sender/wechat
 
 #### 请求方式：
 

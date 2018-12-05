@@ -8,11 +8,11 @@
 
 - POST
 
-#### 请求头：
+#### 请求头
 
 >|参数名|是否必须|类型|说明|
 >|:----|:---|:----- |:-----|
->|Content-Type |是  |string |请求类型：application/x-www-form-urlencoded \|\| application/json|
+>|Content-Type |是  |string |请求类型：application/x-www-form-urlencoded &#124;&#124; application/json|
 
 ### 请求参数
 

@@ -165,8 +165,13 @@ func SrvStart(cfg *simplejson.Json) {
 		contentType := r.Header.Get("Content-Type")
 		switch {
 		case strings.Contains(contentType, "json"):
+			w.Header().Set("Content-Type", contentType)
 			b, err := ioutil.ReadAll(r.Body)
-			if err == nil {
+			if err != nil {
+				Error.Println(err)
+			}
+			err = plaod.UnmarshalJSON(b)
+			if err != nil {
 				Error.Println(err)
 			}
 			plaod.UnmarshalJSON(b)
@@ -182,14 +187,13 @@ func SrvStart(cfg *simplejson.Json) {
 		default:
 			Error.Println("invalid Content-Type")
 		}
-		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "tos:", plaod.To, "subject:", plaod.Subject, "content:", plaod.Content)
+		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "Content-Type:", contentType, "tos:", plaod.To, "subject:", plaod.Subject, "content:", plaod.Content)
 		err = s.SendMail(strings.Split(plaod.To, ","), plaod.Subject, plaod.Content)
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			w.Write([]byte("success\n"))
-
+			w.Write([]byte(`{"errcode": 0,"errmsg":"ok"}`))
 		}
 	})
 
@@ -198,23 +202,28 @@ func SrvStart(cfg *simplejson.Json) {
 		contentType := r.Header.Get("Content-Type")
 		switch {
 		case strings.Contains(contentType, "json"):
+			w.Header().Set("Content-Type", contentType)
 			b, err := ioutil.ReadAll(r.Body)
-
-			if err == nil {
-				panic(err)
+			if err != nil {
+				Error.Println(err)
 			}
-			plaod.UnmarshalJSON(b)
+			err = plaod.UnmarshalJSON(b)
+			if err != nil {
+				Error.Println(err)
+			}
 
 		case strings.Contains(contentType, "x-www-form-urlencoded"):
 			err := r.ParseForm()
 			if err != nil {
-				panic(err)
+				Error.Println(err)
 			}
 			plaod.To = r.PostFormValue("to")
 			plaod.Content = r.PostFormValue("content")
+		default:
+			Error.Println("invalid Content-Type")
 		}
 
-		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "tos:", plaod.To, "content:", plaod.Content)
+		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "Content-Type:", contentType, "tos:", plaod.To, "content:", plaod.Content)
 
 		resp, err := wx.SendMsg(plaod.To, "", plaod.Content)
 		if err != nil {

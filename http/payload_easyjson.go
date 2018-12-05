@@ -36,7 +36,7 @@ func easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(in *jlexer.Lexer, out 
 			continue
 		}
 		switch key {
-		case "To":
+		case "to":
 			out.To = string(in.String())
 		case "subject":
 			out.Subject = string(in.String())
@@ -57,7 +57,7 @@ func easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(out *jwriter.Writer, i
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"To\":"
+		const prefix string = ",\"to\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])

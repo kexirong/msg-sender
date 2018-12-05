@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"io/ioutil"
 	"strconv"
 
 	"fmt"
@@ -72,14 +73,12 @@ func (lf *logfile) SetFile(filename string) error {
 	var filepath string
 	wd, err := os.Getwd()
 	if err == nil {
-		filepath = path.Join(wd, filename)
+		filepath = path.Join(wd, "log/"+filename)
 	} else {
 		panic(err)
 	}
 
-	_, err = os.Stat(filepath)
-
-	if err == nil || os.IsExist(err) {
+	if pathIsExist(filepath) {
 		err := os.Rename(filepath, filepath+strconv.FormatInt(time.Now().Unix(), 10))
 		if err != nil {
 			return err
@@ -102,10 +101,21 @@ func (lf *logfile) Close() {
 }
 
 func init() {
+	if !pathIsExist("./log") {
+		err := os.Mkdir("./log", os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
 	fli := NewLogFile("msg-sender")
 	Info = log.New(fli, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	Warning = log.New(fli, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	Error = log.New(fli, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func pathIsExist(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil || os.IsExist(err)
 }
 
 func SrvStart(cfg *simplejson.Json) {
@@ -127,7 +137,11 @@ func SrvStart(cfg *simplejson.Json) {
 
 	s := email.New(smtpAddr, smtpUser, smtpPass, smtpAuthtype)
 	wx := wechat.New(wxCorpID, wxAgentID, wxSecret)
-	Info.Println(wx.GetAccToken())
+	err := wx.GetAccToken()
+	if err != nil {
+		Error.Printf("getAccToken failed: %s/n", err)
+	}
+	Info.Printf("getAccToken done: %s /n", wx.AccToken)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		/* fmt.Println(r.URL.Query())
@@ -147,42 +161,68 @@ func SrvStart(cfg *simplejson.Json) {
 	})
 
 	http.HandleFunc("/sender/mail", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			panic(err)
+		var plaod paylaod
+		contentType := r.Header.Get("Content-Type")
+		switch {
+		case strings.Contains(contentType, "json"):
+			b, err := ioutil.ReadAll(r.Body)
+			if err == nil {
+				Error.Println(err)
+			}
+			plaod.UnmarshalJSON(b)
+		case strings.Contains(contentType, "x-www-form-urlencoded"):
+			err := r.ParseForm()
+			if err != nil {
+				Error.Println(err)
+			}
+			//fmt.Println(r.PostForm)
+			plaod.To = r.PostFormValue("to")
+			plaod.Subject = r.PostFormValue("subject")
+			plaod.Content = r.PostFormValue("content")
+		default:
+			Error.Println("invalid Content-Type")
 		}
-		//fmt.Println(r.PostForm)
-		tos := r.PostFormValue("to")
-		to := strings.Split(tos, ",")
-		subject := r.PostFormValue("subject")
-		content := r.PostFormValue("content")
-		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "tos:", tos, "subject:", subject, "content:", content)
-		err = s.SendMail(to, subject, content)
+		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "tos:", plaod.To, "subject:", plaod.Subject, "content:", plaod.Content)
+		err = s.SendMail(strings.Split(plaod.To, ","), plaod.Subject, plaod.Content)
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			http.Error(w, "success", http.StatusOK)
+			w.Write([]byte("success\n"))
+
 		}
 	})
 
 	http.HandleFunc("/sender/wechat", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			panic(err)
-		}
-		//fmt.Println(r.PostForm)
-		tos := r.PostFormValue("to")
-		content := r.PostFormValue("content")
-		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "tos:", tos, "content:", content)
+		var plaod paylaod
+		contentType := r.Header.Get("Content-Type")
+		switch {
+		case strings.Contains(contentType, "json"):
+			b, err := ioutil.ReadAll(r.Body)
 
-		resp, err := wx.SendMsg(tos, "", content)
+			if err == nil {
+				panic(err)
+			}
+			plaod.UnmarshalJSON(b)
+
+		case strings.Contains(contentType, "x-www-form-urlencoded"):
+			err := r.ParseForm()
+			if err != nil {
+				panic(err)
+			}
+			plaod.To = r.PostFormValue("to")
+			plaod.Content = r.PostFormValue("content")
+		}
+
+		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "tos:", plaod.To, "content:", plaod.Content)
+
+		resp, err := wx.SendMsg(plaod.To, "", plaod.Content)
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			Info.Println(resp)
-			http.Error(w, resp, http.StatusOK)
+			Info.Printf(string(resp))
+			w.Write(resp)
 		}
 	})
 

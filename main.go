@@ -9,6 +9,7 @@ import (
 const cfgFileName = "cfg.json"
 
 func main() {
+
 	Jcfg, err := getConfig(cfgFileName)
 	if err != nil {
 		panic(err)

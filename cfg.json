@@ -9,7 +9,7 @@
         "address": "smtp.vip.com:25",
         "username": "****@vip.com",
         "password": "*****",
-        "authtype":"Login"
+        "authtype":"LOGIN"
     },
     "wechat":{
         "CorpID":"ww2085adb",

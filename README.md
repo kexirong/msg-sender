@@ -17,7 +17,8 @@
 >    "smtp": {//邮件配置
 >        "address": "smtp.exmail.qq.com:25",//邮件发送服务器地址
 >        "username": "kexirong@example.com",
->        "password": "123456"
+>        "password": "123456",
+>        "authtype":"LOGIN"//认证类型/CRAM-MD5/LOGIN/PLAIN,默认PLAIN
 >    },
 >    "wechat":{//企业微信配置
 >        "CorpID":"ww2085a342", //企业ID

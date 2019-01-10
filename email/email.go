@@ -51,11 +51,15 @@ func (self *SMTP) SendMail(to []string, subject, body string, contentType ...str
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
 	message += "\r\n" + b64.EncodeToString([]byte(body))
-
-	auth := smtp.PlainAuth("", self.username, self.password, addrArr[0])
-
-	if self.authtype == "Login" {
+	var auth smtp.Auth
+	switch self.authtype {
+	case "LOGIN":
 		auth = LoginAuth(self.username, self.password)
+	case "CRAM-MD5":
+		auth = smtp.CRAMMD5Auth(self.username, self.password)
+	default:
+		auth = smtp.PlainAuth("", self.username, self.password, addrArr[0])
+
 	}
 
 	return smtp.SendMail(self.address, auth, self.username, to, []byte(message))

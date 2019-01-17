@@ -174,13 +174,13 @@ func SrvStart(cfg *simplejson.Json) {
 			if err != nil {
 				Error.Println(err)
 			}
-			plaod.UnmarshalJSON(b)
+
 		case strings.Contains(contentType, "x-www-form-urlencoded"):
 			err := r.ParseForm()
 			if err != nil {
 				Error.Println(err)
 			}
-			//fmt.Println(r.PostForm)
+			plaod.From = r.PostFormValue("from")
 			plaod.To = r.PostFormValue("to")
 			plaod.Subject = r.PostFormValue("subject")
 			plaod.Content = r.PostFormValue("content")
@@ -188,7 +188,7 @@ func SrvStart(cfg *simplejson.Json) {
 			Error.Println("invalid Content-Type")
 		}
 		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "Content-Type:", contentType, "tos:", plaod.To, "subject:", plaod.Subject, "content:", plaod.Content)
-		err = s.SendMail(strings.Split(plaod.To, ","), plaod.Subject, plaod.Content)
+		err = s.SendMail(plaod.From, strings.Split(plaod.To, ","), plaod.Subject, plaod.Content)
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

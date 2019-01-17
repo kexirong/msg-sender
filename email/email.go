@@ -23,7 +23,7 @@ func New(address, username, password, authtype string) *SMTP {
 	}
 }
 
-func (self *SMTP) SendMail(to []string, subject, body string, contentType ...string) error {
+func (self *SMTP) SendMail(from string, to []string, subject, body string, contentType ...string) error {
 
 	tos := strings.Join(to, ";")
 	addrArr := strings.Split(self.address, ":")
@@ -34,7 +34,11 @@ func (self *SMTP) SendMail(to []string, subject, body string, contentType ...str
 	b64 := base64.StdEncoding // base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
 	header := make(map[string]string)
+
 	header["From"] = self.username
+	if strings.HasSuffix(from, "staff.qkagame.com") {
+		header["From"] = from
+	}
 	header["To"] = tos
 	header["Subject"] = fmt.Sprintf("=?UTF-8?B?%s?=", b64.EncodeToString([]byte(subject)))
 	header["MIME-Version"] = "1.0"

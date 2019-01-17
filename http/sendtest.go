@@ -1,4 +1,5 @@
 package http
+
 const testStr = `
 <!DOCTYPE html>
 <html lang="en">
@@ -54,6 +55,9 @@ const testStr = `
        
         <div class="content">
             <form action="/sender/mail" method="post">
+                <label>发件人:</label>
+                <input type="text" name="from" value=""><span>可为空,必须为xxx@staff.qkame.com格式</span>
+                <br>
                 <label>收件人:</label>
                 <input type="text" name="to" value=""><span>*多个用","分隔</span>
                 <br>

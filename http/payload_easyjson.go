@@ -4,6 +4,7 @@ package http
 
 import (
 	json "encoding/json"
+
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -17,7 +18,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(in *jlexer.Lexer, out *paylaod) {
+func easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(in *jlexer.Lexer, out *payload) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -44,6 +45,8 @@ func easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(in *jlexer.Lexer, out 
 			out.Subject = string(in.String())
 		case "content":
 			out.Content = string(in.String())
+		case "content_type":
+			out.ContentType = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -54,7 +57,7 @@ func easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(in *jlexer.Lexer, out 
 		in.Consumed()
 	}
 }
-func easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(out *jwriter.Writer, in paylaod) {
+func easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(out *jwriter.Writer, in payload) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -98,29 +101,39 @@ func easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(out *jwriter.Writer, i
 		}
 		out.String(string(in.Content))
 	}
+	{
+		const prefix string = ",\"content_type\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.ContentType))
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v paylaod) MarshalJSON() ([]byte, error) {
+func (v payload) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v paylaod) MarshalEasyJSON(w *jwriter.Writer) {
+func (v payload) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonA8a797f8EncodeGithubComKexirongMsgSenderHttp(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *paylaod) UnmarshalJSON(data []byte) error {
+func (v *payload) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *paylaod) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *payload) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonA8a797f8DecodeGithubComKexirongMsgSenderHttp(l, v)
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path"
 	"strings"
@@ -20,9 +19,12 @@ import (
 )
 
 var (
-	Info    *log.Logger
+	//Info log level
+	Info *log.Logger
+	//Warning log level
 	Warning *log.Logger
-	Error   *log.Logger
+	//Error log level
+	Error *log.Logger
 )
 
 type logfile struct {
@@ -50,7 +52,7 @@ func (lf *logfile) Write(b []byte) (int, error) {
 	return lf.file.Write(b)
 }
 
-func NewLogFile(preFileName string) *logfile {
+func newLogFile(preFileName string) *logfile {
 	var lf logfile
 	lf.preFileName = preFileName
 	err := lf.SetFile(lf.preFileName + time.Now().Format("2006-01-02") + ".log")
@@ -107,7 +109,7 @@ func init() {
 			panic(err)
 		}
 	}
-	fli := NewLogFile("msg-sender")
+	fli := newLogFile("msg-sender")
 	Info = log.New(fli, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	Warning = log.New(fli, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	Error = log.New(fli, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -118,6 +120,7 @@ func pathIsExist(path string) bool {
 	return err == nil || os.IsExist(err)
 }
 
+//SrvStart start http lisent server
 func SrvStart(cfg *simplejson.Json) {
 	//fmt.Println(cfg)
 
@@ -161,7 +164,7 @@ func SrvStart(cfg *simplejson.Json) {
 	})
 
 	http.HandleFunc("/sender/mail", func(w http.ResponseWriter, r *http.Request) {
-		var plaod paylaod
+		var pload payload
 		contentType := r.Header.Get("Content-Type")
 		switch {
 		case strings.Contains(contentType, "json"):
@@ -170,7 +173,7 @@ func SrvStart(cfg *simplejson.Json) {
 			if err != nil {
 				Error.Println(err)
 			}
-			err = plaod.UnmarshalJSON(b)
+			err = pload.UnmarshalJSON(b)
 			if err != nil {
 				Error.Println(err)
 			}
@@ -180,15 +183,18 @@ func SrvStart(cfg *simplejson.Json) {
 			if err != nil {
 				Error.Println(err)
 			}
-			plaod.From = r.PostFormValue("from")
-			plaod.To = r.PostFormValue("to")
-			plaod.Subject = r.PostFormValue("subject")
-			plaod.Content = r.PostFormValue("content")
+			pload.From = r.PostFormValue("from")
+			pload.To = r.PostFormValue("to")
+			pload.Subject = r.PostFormValue("subject")
+			pload.Content = r.PostFormValue("content")
+			pload.ContentType = r.PostFormValue("content_type")
 		default:
 			Error.Println("invalid Content-Type")
 		}
-		Info.Println("#sendMail# ", "client: ", r.RemoteAddr, "Content-Type:", contentType, "tos:", plaod.To, "subject:", plaod.Subject, "content:", plaod.Content)
-		err = s.SendMail(plaod.From, strings.Split(plaod.To, ","), plaod.Subject, plaod.Content)
+		Info.Printf("#sendMail# client:%s, %s-->%s, requestType:%s, subject:%s, content:%s\n", r.RemoteAddr, pload.From, pload.To, contentType, pload.Subject, pload.Content)
+
+		err = s.SendMail(pload.From, strings.Split(pload.To, ","), pload.Subject, pload.Content, pload.ContentType)
+
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -198,7 +204,7 @@ func SrvStart(cfg *simplejson.Json) {
 	})
 
 	http.HandleFunc("/sender/wechat", func(w http.ResponseWriter, r *http.Request) {
-		var plaod paylaod
+		var pload payload
 		contentType := r.Header.Get("Content-Type")
 		switch {
 		case strings.Contains(contentType, "json"):
@@ -207,7 +213,7 @@ func SrvStart(cfg *simplejson.Json) {
 			if err != nil {
 				Error.Println(err)
 			}
-			err = plaod.UnmarshalJSON(b)
+			err = pload.UnmarshalJSON(b)
 			if err != nil {
 				Error.Println(err)
 			}
@@ -217,15 +223,14 @@ func SrvStart(cfg *simplejson.Json) {
 			if err != nil {
 				Error.Println(err)
 			}
-			plaod.To = r.PostFormValue("to")
-			plaod.Content = r.PostFormValue("content")
+			pload.To = r.PostFormValue("to")
+			pload.Content = r.PostFormValue("content")
 		default:
 			Error.Println("invalid Content-Type")
 		}
+		Info.Printf("#sendWechat# client:%s, to:%s, requestType:%s, content:%s\n", r.RemoteAddr, pload.To, contentType, pload.Content)
 
-		Info.Println("#sendWechat# ", "client: ", r.RemoteAddr, "Content-Type:", contentType, "tos:", plaod.To, "content:", plaod.Content)
-
-		resp, err := wx.SendMsg(plaod.To, "", plaod.Content)
+		resp, err := wx.SendMsg(pload.To, "", pload.Content)
 		if err != nil {
 			Error.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

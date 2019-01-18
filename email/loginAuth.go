@@ -11,9 +11,11 @@ type loginAuth struct {
 	username, password string
 }
 
+//LoginAuth return a implemented by smtp.Auth of LOGIN mechanism
 func LoginAuth(username, password string) smtp.Auth {
 	return &loginAuth{username, password}
 }
+
 func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
 	return "LOGIN", nil, nil
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+//SMTP smtp auth info
 type SMTP struct {
 	address,
 	username,
@@ -14,6 +15,7 @@ type SMTP struct {
 	authtype string
 }
 
+//New return *SMTP
 func New(address, username, password, authtype string) *SMTP {
 	return &SMTP{
 		address:  address,
@@ -23,19 +25,20 @@ func New(address, username, password, authtype string) *SMTP {
 	}
 }
 
-func (self *SMTP) SendMail(from string, to []string, subject, body string, contentType ...string) error {
+//SendMail sent the email with args
+func (s *SMTP) SendMail(from string, to []string, subject, body, contentType string) error {
 
 	tos := strings.Join(to, ";")
-	addrArr := strings.Split(self.address, ":")
+	addrArr := strings.Split(s.address, ":")
 	if len(addrArr) != 2 {
 		return fmt.Errorf("address format error")
 	}
 
-	b64 := base64.StdEncoding // base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
-
+	//base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+	b64 := base64.StdEncoding
 	header := make(map[string]string)
 
-	header["From"] = self.username
+	header["From"] = s.username
 	if strings.HasSuffix(from, "staff.qkagame.com") {
 		header["From"] = from
 	}
@@ -43,11 +46,12 @@ func (self *SMTP) SendMail(from string, to []string, subject, body string, conte
 	header["Subject"] = fmt.Sprintf("=?UTF-8?B?%s?=", b64.EncodeToString([]byte(subject)))
 	header["MIME-Version"] = "1.0"
 
-	ctType := "text/plain; charset=UTF-8"
-	if len(contentType) > 0 && contentType[0] == "html" {
-		ctType = "text/html; charset=UTF-8"
+	if contentType == "html" {
+		header["Content-Type"] = "text/html; charset=UTF-8"
+	} else {
+		header["Content-Type"] = "text/plain; charset=UTF-8"
 	}
-	header["Content-Type"] = ctType
+
 	header["Content-Transfer-Encoding"] = "base64"
 
 	message := ""
@@ -56,15 +60,15 @@ func (self *SMTP) SendMail(from string, to []string, subject, body string, conte
 	}
 	message += "\r\n" + b64.EncodeToString([]byte(body))
 	var auth smtp.Auth
-	switch self.authtype {
+	switch s.authtype {
 	case "LOGIN":
-		auth = LoginAuth(self.username, self.password)
+		auth = LoginAuth(s.username, s.password)
 	case "CRAM-MD5":
-		auth = smtp.CRAMMD5Auth(self.username, self.password)
+		auth = smtp.CRAMMD5Auth(s.username, s.password)
 	default:
-		auth = smtp.PlainAuth("", self.username, self.password, addrArr[0])
+		auth = smtp.PlainAuth("", s.username, s.password, addrArr[0])
 
 	}
 
-	return smtp.SendMail(self.address, auth, self.username, to, []byte(message))
+	return smtp.SendMail(s.address, auth, s.username, to, []byte(message))
 }

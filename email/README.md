@@ -22,4 +22,4 @@
 >|to|是  |string | 收件人地址，多个收件人用(,)分隔|
 >|subject|是  |string | 邮件标题|
 >|content|是  |string | 邮件内容|
->|contentType|否  |string |填 html(保留字段)|
+>|content_type|否  |string |填 `html`or`txt` 默认`txt`|

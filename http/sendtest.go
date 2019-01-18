@@ -65,7 +65,11 @@ const testStr = `
                 <input type="text" name="subject" value="">
                 <br>
                 <label>内容:</label>
-                <textarea name="content" cols="30" rows="4"></textarea>  
+                <textarea name="content" cols="30" rows="4"></textarea>
+                <br>
+                <label>内容类型:</label>
+                <input type="text" name="content_type" value=""><span>text or html</span>
+                <br>
                 <br><br>
                 <input type="submit" value="提交">
             </form> 
